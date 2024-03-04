@@ -1,0 +1,87 @@
+﻿
+@{
+    ViewData["Title"] = "Item";
+}
+@model Shop.Models.ItemInfo
+
+<h1>Item</h1>
+
+<div class="item">
+    <div class="geeks">
+        <img id="img" src="" />
+    </div>
+    <div class="id">id:@Model.IDNo</div>
+    <div class="src"><img src="@Model.src" /></div>
+    <div class="name">品名:@Model.name</div>
+    <div class="info">單價:@Model.price</div>
+    <div class="count">數量:@Model.count</div>
+    <div>要買的數量</div>
+    <input id="buyCount" type="number" />
+    <button type="button" id="btnAdd" onclick="btnAddClick();">加入購物車</button>
+</div>
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">請選擇前往頁面</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="接著購物();">接著購物</button>
+        <button type="button" class="btn btn-primary" data-dismiss="modal" onclick="去結帳();">去結帳</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section Scripts {
+<script>
+async function btnAddClick() {
+    const id = @Model.IDNo;
+    const buyCount = parseInt($("#buyCount").val());
+    alert(`add id ${id} buyCount ${buyCount}`);
+
+    try {
+        const url = `${window.websettings.host}/Home/UpdateBuyItem`;
+        const para = {
+            IDNo: id,
+            buyCount: buyCount
+        }
+        const response = await axios.post(url, para);
+        const result = response.data;
+    
+         if (result.success) {
+            console.log("Operation successful:", result.message);
+            alert(`成功 add id ${id} buyCount ${buyCount}`);
+
+            $("#exampleModal").modal('show');
+
+        } else {
+            // Operation failed
+            console.error("Operation failed:", result.message);
+            alert(`失敗 add id ${id} buyCount ${buyCount}`);
+        }
+        
+    } catch (error) {
+        console.error("發生錯誤:", error);
+        // 在這裡處理錯誤情況
+        alert(`失敗異常 add id ${id} buyCount ${buyCount}`);
+    }
+}
+
+function 接著購物() {
+    const url = `${window.websettings.host}/Home/Index`;
+    window.location.href = url;
+}
+function 去結帳() {
+    const url = `${window.websettings.host}/Home/BuyItemList`;
+    window.location.href = url;
+}
+</script>
+}

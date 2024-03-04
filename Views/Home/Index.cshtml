@@ -1,0 +1,115 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+<style>
+    .item{
+        margin:10px;
+    }
+    .geeks {
+        width: 300px;
+        height: 300px;
+        border: 1px solid #ccc;
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        align-content: space-around;
+    }
+ 
+    img {
+        width: 100%;
+        height: auto;
+    }
+</style>
+<div id="loading" class="d-flex align-items-center d-none">
+    <strong>Loading...</strong>
+    <div class="spinner-border ml-auto" role="status" aria-hidden="true"></div>
+</div>
+<div id="item-list" class="d-flex align-content-around flex-wrap">
+    @*<div class="item">
+        <div class="geeks">
+            <img src="img/camera.jpg" />
+        </div>
+        <div>a</div>
+        <div>2</div>
+    </div>
+    <div class="item">
+        <div class="geeks">
+            <img src="img/camera.jpg" />
+        </div>
+        <div>b</div>
+        <div>3</div>
+    </div>*@
+</div>
+
+@section Scripts {
+<script>
+
+function createItem(src, name, count, idNo, price) {
+    const $item = $(`
+        <div class="item" data-id="${idNo}">
+            <div class="geeks">
+                <img src="${window.websettings.host}/${src}" />
+            </div>
+            <div>商品名稱: ${name}</div>
+            <div>數量: ${count}</div>  
+            <div>單價: ${price}</div>
+        </div>
+    `);
+    $item.click(function() {
+        alert("this is id " + idNo);
+        window.location.href = `${window.websettings.host}/Home/Item?id=${idNo}`;
+    });
+    return $item;
+}
+function appendItem(itemList) {
+    const $itemList = $("#item-list");
+    $itemList.empty();
+
+    itemList.forEach(function(item, index) {
+        const src = item.src;
+        const name = item.name;
+        const count = item.count;
+        const idNo = item.idNo;
+        const price = item.price;
+        const $item = createItem(src, name, count, idNo, price);
+        $itemList.append($item);
+    });
+}
+
+
+async function getItems() {
+    try {
+        let url = `${window.websettings.host}/Home/IndexQuery`;
+        const response = await axios.get(url);
+        const result = response.data;
+    
+        if (result == null) {
+            return null;
+        }
+        return result;
+        
+    } catch (error) {
+        console.error("發生錯誤:", error);
+        // 在這裡處理錯誤情況
+        return null;
+    }
+}
+
+async function main() {
+    const items = await getItems();
+    appendItem(items);
+}
+
+$(document).ready(async function() {
+    showLoading();
+    await main();
+    hideLoading();
+});
+function showLoading() {
+    fn_showLoading("#loading", "#item-list");
+}
+function hideLoading() {
+    fn_hideLoading("#loading", "#item-list");
+}
+</script>
+}

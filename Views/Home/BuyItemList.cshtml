@@ -1,0 +1,130 @@
+﻿
+@model List<Shop.Models.BuyItem>
+@{
+    ViewData["Title"] = "AddList";
+}
+<style>
+    .item{
+        margin:10px;
+        border: 1px solid #ccc;
+    }
+
+</style>
+<div>
+    <div class="row ">
+            <div class="col d-none">IDNo</div>
+            <div class="col">操作</div>
+            <div class="col">商品名稱</div>
+            <div class="col">圖片</div>
+            <div class="col price">單價</div>
+            <div class="col buyCount">購買數量</div>
+    </div>
+    @foreach (var item in Model)
+    {
+        <div class="row item">
+            <div class="col d-none IDNo">@item.IDNo</div>
+            <div class="col">
+                <button type="button" value="取消" class="btn btn-danger" onclick="cancel(@item.IDNo);">取消</button>
+            </div>
+            <div class="col">@item.Name</div>
+            <div class="col">
+                <img src="@item.src" />
+            </div>
+            <div class="col price">@item.Price</div>
+            <input type="number" class="col buyCount" value="@item.BuyCount" />
+        </div>
+    }
+    總額
+    <div id="totalPrice"></div>
+    <button type="button" id="btnBuy" onclick="結帳();">結帳</button>
+</div>
+
+@section scripts {
+<script>
+$(document).ready(function() {
+    // 计算总额
+    function calculateTotalPrice() {
+        var totalPrice = 0;
+
+        $(".item").each(function() {
+            debugger;
+            var price = parseFloat($(this).find(".price").text());
+            var buyCount = parseInt($(this).find(".buyCount").val());
+
+            totalPrice += price * buyCount;
+        });
+        $("#totalPrice").text("Total Price: " + totalPrice.toFixed(2));
+    }
+
+    // 初次加载时计算一次
+    calculateTotalPrice();
+
+    // 当输入框内容改变时重新计算
+    $(".buyCount").change(function() {
+        calculateTotalPrice();
+    });
+});
+async function cancel(idNo){
+    try {
+        const url = `${window.websettings.host}/Home/DeleteBuyItem`;
+        const para = {
+            IDNo: idNo,
+        }
+        const response = await axios.post(url, para);
+        const result = response.data;
+    
+            if (result.success) {
+            console.log("Operation successful:", result.message);
+            alert(`成功刪除 id ${idNo}`);
+            location.reload(true);
+        } else {
+            // Operation failed
+            console.error("Operation failed:", result.message);
+            alert(`失敗 add id ${idNo}`);
+        }
+        
+    } catch (error) {
+        console.error("發生錯誤:", error);
+        // 在這裡處理錯誤情況
+        alert(`失敗異常 add id ${idNo}`);
+    }
+}
+
+async function 結帳() {
+    結帳前更新數量();
+    window.location.href = `${window.websettings.host}/Home/Buy`;
+}
+async function 結帳前更新數量(){
+    let datas = [];
+    $(".item").each(function(index, item) {
+        const IDNo = parseInt($(item).find(".IDNo").text());
+        const buyCount = parseInt($(item).find(".buyCount").val());
+        datas.push({
+            IDNo:IDNo,
+            buyCount :buyCount
+        });
+    });
+    for (let i = 0; i < datas.length; i++) {
+        const para = datas[i];
+        const url = `${window.websettings.host}/Home/UpdateBuyItem`;
+        
+        const response = await axios.post(url, para);
+        const result = response.data;
+    
+         if (result.success) {
+            console.log("Operation successful:", result.message);
+            //alert(`成功 add id ${id} buyCount ${buyCount}`);
+
+            //$("#exampleModal").modal('show');
+
+        } else {
+            // Operation failed
+            console.error("Operation failed:", result.message);
+            //alert(`失敗 add id ${id} buyCount ${buyCount}`);
+        }
+    }
+}
+
+
+</script>
+}
